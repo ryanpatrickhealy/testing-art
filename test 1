@@ -1,0 +1,62 @@
+// Load the StyleGAN model
+let styleGAN;
+
+function preload() {
+  styleGAN = ml5.styleGAN('model'); // Replace 'model' with the name of the StyleGAN model you want to use
+}
+
+// Define the prompt and image variables
+let prompt = '';
+let image;
+let canvas;
+
+function setup() {
+  canvas = createCanvas(512, 512);
+  generateImage();
+}
+
+function draw() {
+  // Animate the image using Perlin noise
+  let t = frameCount / 60;
+  let n = noise(t);
+  image.translate(n * 10 - 5, n * 10 - 5);
+  image.rotate(n * 0.02 - 0.01);
+
+  // Draw the image on the canvas
+  background(220);
+  image(image, 0, 0);
+}
+
+function generateImage() {
+  // Generate a new image using the StyleGAN model and user input prompt
+  styleGAN.generate({ prompt: prompt }, function(err, result) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+
+    // Convert the image to a p5.js image object
+    let imgElement = result.image;
+    image = createImg(imgElement.src, 'generated image');
+
+    // Reset the image position and rotation
+    image.position(0, 0);
+    image.style('width', '512px');
+    image.style('height', '512px');
+    image.style('position', 'absolute');
+    image.style('top', '0');
+    image.style('left', '0');
+
+    // Clear the previous image from the canvas
+    clear();
+
+    // Draw the new image on the canvas
+    image(image, 0, 0);
+  });
+}
+
+// Update the prompt variable when the user types in the input field
+function updatePrompt() {
+  prompt = document.getElementById('prompt').value;
+  generateImage();
+}
